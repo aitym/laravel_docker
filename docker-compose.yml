@@ -29,7 +29,7 @@ services:
       - test_task
   nodejs:
     container_name: test-task-nodejs
-    build: .docker/nodejs
+    image: node:20.11.1-alpine3.18
     restart: always
     tty: true
     working_dir: /var/www/test_task
