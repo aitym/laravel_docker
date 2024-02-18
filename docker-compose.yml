@@ -1,0 +1,61 @@
+version: '3.9'
+
+services:
+  nginx:
+    container_name: test-task-nginx
+    image: nginx:1.25.4-alpine3.18
+    restart: always
+    tty: true
+    volumes:
+      - .docker/nginx:/etc/nginx/conf.d
+      - .:/var/www/test_task
+    ports:
+      - '${NGINX_PORT:-80}:80'
+    networks:
+      test_task:
+        aliases:
+          - test_task.local
+  php:
+    container_name: test-task-php
+    build: .docker/php
+    image: test-task-php:8.3.3-fpm-alpine3.18
+    restart: always
+    tty: true
+    volumes:
+      - .:/var/www/test_task
+      - .docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    networks:
+      - test_task
+  postgres:
+    container_name: test-task-postgres
+    image: postgres:16.2-alpine3.18
+    restart: always
+    tty: true
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    networks:
+      - test_task
+  redis:
+    container_name: test-task-redis
+    image: redis:7.2.3-alpine3.18
+    restart: always
+    tty: true
+    volumes:
+      - redis:/data
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    networks:
+      - test_task
+volumes:
+  postgres:
+  redis:
+networks:
+  test_task:
